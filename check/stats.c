@@ -13,14 +13,6 @@
 #define GRN          "\x1B[32m"
 #define RESET        "\x1B[0m"
 
-/*
-to build it: gcc stats.c -o stats -Wall
-to use it: 
-            ./stats "/run/haproxy/admin.sock" "show stat"
-or
-           ./stats 127.0.0.1 9999 "show stat"
-*/
-
 int main(int argc, char **argv)
 {
     char *socketPath = NULL;
