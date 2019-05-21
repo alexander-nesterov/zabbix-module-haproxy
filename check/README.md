@@ -5,7 +5,6 @@ gcc stats.c -o stats -Wall
 to use it:
 ```bash
 ./stats "/run/haproxy/admin.sock" "show stat"
-
 ```
 or
 ```bash
