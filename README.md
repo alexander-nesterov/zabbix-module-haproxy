@@ -19,22 +19,4 @@ to check it:
 ```bash
 echo "show stat" | socat /run/haproxy/admin.sock stdio
 ```
-or
-```perl
-use strict;
-use warnings;
-use IO::Socket::UNIX;
-
-my $SOCK_PATH = "/run/haproxy/admin.sock";
-my $CMD = "show stat\n";
-
-my $client = IO::Socket::UNIX->new(Type => SOCK_STREAM(), Peer => $SOCK_PATH);
-
-print $client "$CMD";
-
-while (my $line = <$client>) 
-{
-        print $line;
-}
-close($client);
-```
+or you can use it: [checks](https://github.com/alexander-nesterov/zabbix_module_haproxy/tree/master/check)
