@@ -13,6 +13,20 @@
 #define GRN          "\x1B[32m"
 #define RESET        "\x1B[0m"
 
+void help(void)
+{
+    const char *message[] = {
+        "Usage:",
+        "       stats /run/haproxy/admin.sock \"show stat\"",
+        "or",
+        "       stats 192.168.1.100 9999 \"show stat\"",
+        NULL
+    };
+    const char	**p = message;
+    while (NULL != *p)
+        printf(GRN "%s\n" RESET, *p++);
+}
+
 int main(int argc, char **argv)
 {
     char *socketPath = NULL;
@@ -29,7 +43,7 @@ int main(int argc, char **argv)
 
     if (argc < 3)
     {
-        printf(RED "%s\n", "Usage: stats <sock> <command>" RESET);
+        help();
         return EXIT_FAILURE;
     }
 
