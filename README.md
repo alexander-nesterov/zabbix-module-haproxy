@@ -10,7 +10,7 @@ http://cbonte.github.io/haproxy-dconv/1.9/configuration.html#3.1-stats%20socket
 
 Fisrt, you need to enable stats
 ```bash
-stats socket /run/haproxy/admin.sock mode 666 level admin expose-fd listeners
+stats socket /run/haproxy/admin.sock mode 666 level admin
 #or
 stats socket 127.0.0.1:9999
 stats timeout 10s
