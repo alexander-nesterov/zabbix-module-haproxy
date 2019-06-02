@@ -3,14 +3,43 @@
 #include "common.h"
 #include "log.h"
 #include "version.h"
+#include "haproxy.h"
 
 static int item_timeout = 0;
-static int zbx_module_haproxy_backend_autodiscovery(AGENT_REQUEST *request, AGENT_RESULT *result);
+
+/* autodiscovery */
+static int zbx_module_haproxy_frontend_autodiscovery_unix(AGENT_REQUEST *request, AGENT_RESULT *result);
+static int zbx_module_haproxy_frontend_autodiscovery_net(AGENT_REQUEST *request, AGENT_RESULT *result);
+static int zbx_module_haproxy_backend_autodiscovery_unix(AGENT_REQUEST *request, AGENT_RESULT *result);
+static int zbx_module_haproxy_backend_autodiscovery_net(AGENT_REQUEST *request, AGENT_RESULT *result);
+
+/* stat */
+static int zbx_module_haproxy_stat_unix(AGENT_REQUEST *request, AGENT_RESULT *result);      /* show stat */
+static int zbx_module_haproxy_stat_net(AGENT_REQUEST *request, AGENT_RESULT *result);       /* show stat */
+static int zbx_module_haproxy_stat_json_unix(AGENT_REQUEST *request, AGENT_RESULT *result); /* show stat json */
+static int zbx_module_haproxy_stat_json_net(AGENT_REQUEST *request, AGENT_RESULT *result);  /* show stat json */
+
+/* info */
+static int zbx_module_haproxy_info_unix(AGENT_REQUEST *request, AGENT_RESULT *result);      /* show info */
+static int zbx_module_haproxy_info_net(AGENT_REQUEST *request, AGENT_RESULT *result);       /* show info */
+static int zbx_module_haproxy_info_json_unix(AGENT_REQUEST *request, AGENT_RESULT *result); /* show info json */
+static int zbx_module_haproxy_info_json_net(AGENT_REQUEST *request, AGENT_RESULT *result);  /* show info json */
 
 static ZBX_METRIC keys[] =
-/*                KEY                    FLAG                FUNCTION              TEST PARAMETERS */
+/*                    KEY                       FLAG                    FUNCTION                           TEST PARAMETERS */
 {
-    {"haproxy.backend.autodiscovery", CF_HAVEPARAMS, zbx_module_haproxy_backend_autodiscovery, NULL},
+    {"haproxy.frontend.autodiscovery.unix", CF_HAVEPARAMS, zbx_module_haproxy_frontend_autodiscovery_unix, NULL},
+    {"haproxy.frontend.autodiscovery.net",  CF_HAVEPARAMS, zbx_module_haproxy_frontend_autodiscovery_net,  NULL},
+    {"haproxy.backend.autodiscovery.unix",  CF_HAVEPARAMS, zbx_module_haproxy_backend_autodiscovery_unix,  NULL},
+    {"haproxy.backend.autodiscovery.net",   CF_HAVEPARAMS, zbx_module_haproxy_backend_autodiscovery_net,   NULL},
+    {"haproxy.stat.unix",                   CF_HAVEPARAMS, zbx_module_haproxy_stat_unix,                   NULL},
+    {"haproxy.stat.net",                    CF_HAVEPARAMS, zbx_module_haproxy_stat_net,                    NULL},
+    {"haproxy.stat.json.unix",              CF_HAVEPARAMS, zbx_module_haproxy_stat_json_unix,              NULL},
+    {"haproxy.stat.json.net",               CF_HAVEPARAMS, zbx_module_haproxy_stat_json_net,               NULL},
+    {"haproxy.info.unix",                   CF_HAVEPARAMS, zbx_module_haproxy_info_unix,                   NULL},
+    {"haproxy.info.net",                    CF_HAVEPARAMS, zbx_module_haproxy_info_net,                    NULL},
+    {"haproxy.info.json.unix",              CF_HAVEPARAMS, zbx_module_haproxy_info_json_unix,              NULL},
+    {"haproxy.info.json.net",               CF_HAVEPARAMS, zbx_module_haproxy_info_json_net,               NULL},
     {NULL}
 };
 
@@ -102,9 +131,23 @@ void zbx_module_item_timeout(int timeout)
 
 /******************************************************************************
 ******************************************************************************/
-static int zbx_module_haproxy_backend_autodiscovery(AGENT_REQUEST *request, AGENT_RESULT *result)
+static int zbx_module_haproxy_frontend_autodiscovery_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
-    const char *__function_name = "zbx_module_haproxy_backend_autodiscovery";
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_frontend_autodiscovery_net(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_backend_autodiscovery_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    const char *__function_name = "zbx_module_haproxy_backend_autodiscovery_unix";
 
     zabbix_log(LOG_LEVEL_DEBUG, 
                "Module: %s - param num: %d (%s:%d)",
@@ -123,4 +166,81 @@ static int zbx_module_haproxy_backend_autodiscovery(AGENT_REQUEST *request, AGEN
     return SYSINFO_RET_OK;
 }
 
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_backend_autodiscovery_net(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    const char *__function_name = "zbx_module_haproxy_backend_autodiscovery_net";
 
+    zabbix_log(LOG_LEVEL_DEBUG, 
+               "Module: %s - param num: %d (%s:%d)",
+               MODULE_NAME, request->nparam, __FILE__, __LINE__);
+
+    if (3 != request->nparam)
+    {
+        SET_MSG_RESULT(result, strdup("Invalid number of parameters, see log"));
+
+        zabbix_log(LOG_LEVEL_DEBUG, "Module: %s, function: %s - invalid number of parameters (%s:%d)",
+                   MODULE_NAME, __function_name, __FILE__, __LINE__);
+
+        return SYSINFO_RET_FAIL;
+    }
+
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_stat_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_stat_net(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_stat_json_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_stat_json_net(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_info_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_info_net(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_info_json_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_info_json_net(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
