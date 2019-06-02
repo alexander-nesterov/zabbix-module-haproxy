@@ -167,6 +167,9 @@ static int zbx_module_haproxy_backend_autodiscovery_unix(AGENT_REQUEST *request,
         return SYSINFO_RET_FAIL;
     }
 
+    /*
+    key: haproxy.backend.autodiscovery.unix["/run/haproxy/admin.sock"]
+    */
     socketPath = get_rparam(request, 0);
 
     ret = connect_unix(socketPath);
@@ -194,7 +197,7 @@ static int zbx_module_haproxy_backend_autodiscovery_net(AGENT_REQUEST *request, 
 
     if (3 != request->nparam)
     {
-        SET_MSG_RESULT(result, strdup("Invalid number of parameters, see log"));
+        SET_MSG_RESULT(result, strdup("Invalid number of parameters, see log for details"));
 
         zabbix_log(LOG_LEVEL_DEBUG, "Module: %s, function: %s - invalid number of parameters (%s:%d)",
                    MODULE_NAME, __function_name, __FILE__, __LINE__);
@@ -202,13 +205,16 @@ static int zbx_module_haproxy_backend_autodiscovery_net(AGENT_REQUEST *request, 
         return SYSINFO_RET_FAIL;
     }
 
+    /*
+    key: haproxy.backend.autodiscovery.net[192.168.1.00, 9999]
+    */
     host = get_rparam(request, 0);
     port = get_rparam(request, 1);
 
     ret = connect_net(host, port);
     if (ret != SYSINFO_RET_OK)
     {
-        SET_MSG_RESULT(result, strdup("Cannot connect, see log"));
+        SET_MSG_RESULT(result, strdup("Cannot connect, see log for details"));
         return SYSINFO_RET_FAIL;
     }
 

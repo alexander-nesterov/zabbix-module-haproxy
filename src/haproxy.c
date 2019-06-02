@@ -83,3 +83,22 @@ int connect_net(const char *host, int port)
     }
     return SYSINFO_RET_OK;
 }
+
+/******************************************************************************
+******************************************************************************/
+int send_command(int sock, char *cmd)
+{
+    const char *__function_name = "send_command";
+    int ret;
+
+    strcat(cmd, "\n");
+    ret = write(sock, cmd, strlen(cmd));
+    if (ret == ERROR)
+    {
+        zabbix_log(LOG_LEVEL_TRACE,
+                   "Module: %s, function: %s - Cannot write to socket (%s:%d)",
+                   MODULE_NAME, __function_name, __FILE__, __LINE__);
+        return SYSINFO_RET_FAIL;
+    }
+    return SYSINFO_RET_OK;
+}
