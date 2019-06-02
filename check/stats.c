@@ -6,9 +6,9 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include "syscall.h"
 
 #define ERROR        -1
-#define BUFFER_SIZE  2000
 #define RED          "\x1B[31m"
 #define GRN          "\x1B[32m"
 #define RESET        "\x1B[0m"
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     struct sockaddr_un addrUn;
     struct sockaddr_in addrIn;
     int ret;
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFSIZ];
     unsigned long ip = 0;
     int domain; /* 1 - Unix domain socket (AF_UNIX), 2 - Internet IP protocol (AF_INET) */
 
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     if(sock < 0)
     {
         printf(RED "%s\n", "Cannot create socket" RESET);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     if (domain == AF_UNIX) /* Unix domain socket */
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     if (ret == ERROR)
     {
         printf(RED "%s\n", "The server is down" RESET);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     strcat(cmd, "\n");
@@ -104,14 +104,14 @@ int main(int argc, char **argv)
     if (ret == ERROR)
     {
         printf(RED "%s\n", "Cannot write to socket" RESET);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
-    ret = read(sock, buffer, BUFFER_SIZE);
+    ret = read(sock, buffer, BUFSIZ);
     if (ret == ERROR)
     {
         printf(RED "%s\n", "Cannot read from socket" RESET);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
     printf("%s", buffer);
 
