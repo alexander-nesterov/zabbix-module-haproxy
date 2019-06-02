@@ -15,6 +15,7 @@
 
 void help(void)
 {
+    int i = 0;
     const char *message[] = {
         "Usage:",
         "       stats /run/haproxy/admin.sock \"show stat\"",
@@ -22,9 +23,12 @@ void help(void)
         "       stats 192.168.1.100 9999 \"show stat\"",
         NULL
     };
-    const char	**p = message;
-    while (NULL != *p)
-        printf(GRN "%s\n" RESET, *p++);
+
+    while (message[i] != NULL)
+    {
+        printf(GRN "%s\n" RESET, message[i]);
+        i++;
+    }
 }
 
 int main(int argc, char **argv)
@@ -41,7 +45,7 @@ int main(int argc, char **argv)
     unsigned long ip = 0;
     int domain; /* 1 - Unix domain socket (AF_UNIX), 2 - Internet IP protocol (AF_INET) */
 
-    if (argc < 3)
+    if (argc < 3 || argc > 4)
     {
         help();
         return EXIT_FAILURE;
