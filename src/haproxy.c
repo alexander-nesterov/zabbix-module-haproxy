@@ -1,21 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include "syscall.h"
-/* zabbix */
-#include "sysinc.h"
-#include "module.h"
-#include "common.h"
-#include "log.h"
-#include "zbxjson.h"
 #include "haproxy.h"
 
-#define ERROR -1
+#define ERROR        -1
+#define COMMAND_LEN  40
 
 /******************************************************************************
 ******************************************************************************/
@@ -95,8 +81,10 @@ int send_command(int sock, char *cmd, char **data)
     const char *__function_name = "send_command";
     int ret;
     char buffer[BUFSIZ];
+    char command[COMMAND_LEN];
 
-    ret = write(sock, cmd, strlen(cmd));
+    zbx_snprintf(command, COMMAND_LEN, "%s\n", cmd);
+    ret = write(sock, command, strlen(command));
     if (ret == ERROR)
     {
         zabbix_log(LOG_LEVEL_TRACE,

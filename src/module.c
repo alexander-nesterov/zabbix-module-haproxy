@@ -1,8 +1,3 @@
-#include "sysinc.h"
-#include "module.h"
-#include "common.h"
-#include "log.h"
-#include "version.h"
 #include "haproxy.h"
 
 /*
@@ -22,23 +17,27 @@ static int zbx_module_haproxy_frontend_autodiscovery_net(AGENT_REQUEST *request,
 static int zbx_module_haproxy_backend_autodiscovery_unix(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int zbx_module_haproxy_backend_autodiscovery_net(AGENT_REQUEST *request, AGENT_RESULT *result);
 
-/* stat */
+/* stat - report counters for each proxy and server */
 static int zbx_module_haproxy_stat_unix(AGENT_REQUEST *request, AGENT_RESULT *result);      /* show stat */
 static int zbx_module_haproxy_stat_net(AGENT_REQUEST *request, AGENT_RESULT *result);       /* show stat */
 /* https://www.zabbix.com/documentation/4.2/manual/appendix/items/preprocessing */
 static int zbx_module_haproxy_stat_json_unix(AGENT_REQUEST *request, AGENT_RESULT *result); /* show stat json */
 static int zbx_module_haproxy_stat_json_net(AGENT_REQUEST *request, AGENT_RESULT *result);  /* show stat json */
 
-/* info */
+/* info - report information about the running process */
 static int zbx_module_haproxy_info_unix(AGENT_REQUEST *request, AGENT_RESULT *result);      /* show info */
 static int zbx_module_haproxy_info_net(AGENT_REQUEST *request, AGENT_RESULT *result);       /* show info */
 /* https://www.zabbix.com/documentation/4.2/manual/appendix/items/preprocessing */
 static int zbx_module_haproxy_info_json_unix(AGENT_REQUEST *request, AGENT_RESULT *result); /* show info json */
 static int zbx_module_haproxy_info_json_net(AGENT_REQUEST *request, AGENT_RESULT *result);  /* show info json */
 
-/* pools */
-static int zbx_module_haproxy_pools_unix(AGENT_REQUEST *request, AGENT_RESULT *result);      /* show pools */
+/* pools -  report information about the memory pools usage */
+static int zbx_module_haproxy_pools_unix(AGENT_REQUEST *request, AGENT_RESULT *result);     /* show pools */
 static int zbx_module_haproxy_pools_net(AGENT_REQUEST *request, AGENT_RESULT *result);      /* show pools */
+
+/* activity - show per-thread activity stats (for support/developers) */
+static int zbx_module_haproxy_activity_unix(AGENT_REQUEST *request, AGENT_RESULT *result);  /* show activity */
+static int zbx_module_haproxy_activity_net(AGENT_REQUEST *request, AGENT_RESULT *result);   /* show activity */
 
 static ZBX_METRIC keys[] =
 /*                    KEY                       FLAG                    FUNCTION                           TEST PARAMETERS */
@@ -57,6 +56,8 @@ static ZBX_METRIC keys[] =
     {"haproxy.info.json.net",               CF_HAVEPARAMS, zbx_module_haproxy_info_json_net,               NULL},
     {"haproxy.pools.unix",                  CF_HAVEPARAMS, zbx_module_haproxy_pools_unix,                  NULL},
     {"haproxy.pools.net",                   CF_HAVEPARAMS, zbx_module_haproxy_pools_net,                   NULL},
+    {"haproxy.activity.unix",               CF_HAVEPARAMS, zbx_module_haproxy_activity_unix,               NULL},
+    {"haproxy.activity.net",                CF_HAVEPARAMS, zbx_module_haproxy_activity_net,                NULL},
     {NULL}
 };
 
@@ -168,7 +169,7 @@ static int zbx_module_haproxy_backend_autodiscovery_unix(AGENT_REQUEST *request,
     char *sockPath = NULL;
     int ret;
     int sock;
-    char *cmd = "show stat\n";
+    char *cmd = "show stat";
     char *data = NULL;
 
     if (1 != request->nparam)
@@ -182,7 +183,7 @@ static int zbx_module_haproxy_backend_autodiscovery_unix(AGENT_REQUEST *request,
     }
 
     /*
-    key: haproxy.backend.autodiscovery.unix["/run/haproxy/admin.sock"]
+    key: haproxy.backend.autodiscovery.unix["/run/haproxy/stats.sock"]
     */
     sockPath = get_rparam(request, 0);
 
@@ -201,7 +202,7 @@ static int zbx_module_haproxy_backend_autodiscovery_unix(AGENT_REQUEST *request,
     }
 
     SET_STR_RESULT(result, zbx_strdup(NULL, data));
-
+    data = NULL;
     return SYSINFO_RET_OK;
 }
 
@@ -215,7 +216,7 @@ static int zbx_module_haproxy_backend_autodiscovery_net(AGENT_REQUEST *request, 
     int port;
     int ret;
     int sock;
-    char *cmd = "show stat\n";
+    char *cmd = "show stat";
     char *data = NULL;
 
     if (2 != request->nparam)
@@ -250,7 +251,7 @@ static int zbx_module_haproxy_backend_autodiscovery_net(AGENT_REQUEST *request, 
     }
 
     SET_STR_RESULT(result, zbx_strdup(NULL, data));
-
+    data = NULL;
     return SYSINFO_RET_OK;
 }
 
@@ -272,6 +273,44 @@ static int zbx_module_haproxy_stat_net(AGENT_REQUEST *request, AGENT_RESULT *res
 ******************************************************************************/
 static int zbx_module_haproxy_stat_json_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
+    const char *__function_name = "zbx_module_haproxy_stat_json_unix";
+    char *sockPath = NULL;
+    int ret;
+    int sock;
+    char *cmd = "show stat json";
+    char *data = NULL;
+
+    if (1 != request->nparam)
+    {
+        SET_MSG_RESULT(result, strdup("Invalid number of parameters, see log"));
+
+        zabbix_log(LOG_LEVEL_DEBUG, "Module: %s, function: %s - invalid number of parameters (%s:%d)",
+                   MODULE_NAME, __function_name, __FILE__, __LINE__);
+
+        return SYSINFO_RET_FAIL;
+    }
+
+    /*
+    key: haproxy.stat.json.unix["/run/haproxy/stats.sock"]
+    */
+    sockPath = get_rparam(request, 0);
+
+    ret = connect_unix(sockPath, &sock);
+    if (ret != SYSINFO_RET_OK)
+    {
+        SET_MSG_RESULT(result, strdup("Cannot connect, see log"));
+        return SYSINFO_RET_FAIL;
+    }
+
+    ret = send_command(sock, cmd, &data);
+    if (ret != SYSINFO_RET_OK)
+    {
+        SET_MSG_RESULT(result, strdup("Cannot send command, see log for details"));
+        return SYSINFO_RET_FAIL;
+    }
+
+    SET_STR_RESULT(result, zbx_strdup(NULL, data));
+    data = NULL;
     return SYSINFO_RET_OK;
 }
 
@@ -279,6 +318,50 @@ static int zbx_module_haproxy_stat_json_unix(AGENT_REQUEST *request, AGENT_RESUL
 ******************************************************************************/
 static int zbx_module_haproxy_stat_json_net(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
+    const char *__function_name = "zbx_module_haproxy_stat_json_net";
+    char *host = NULL; 
+    char *param2 = NULL;
+    int port;
+    int ret;
+    int sock;
+    char *cmd = "show stat json";
+    char *data = NULL;
+
+    if (2 != request->nparam)
+    {
+        SET_MSG_RESULT(result, strdup("Invalid number of parameters, see log for details"));
+
+        zabbix_log(LOG_LEVEL_DEBUG, "Module: %s, function: %s - invalid number of parameters (%s:%d)",
+                   MODULE_NAME, __function_name, __FILE__, __LINE__);
+
+        return SYSINFO_RET_FAIL;
+    }
+
+    /*
+    key: haproxy.stat.json.net[192.168.1.00, 9999]
+    */
+    host = get_rparam(request, 0);
+    param2 = get_rparam(request, 1);
+    port = atoi(param2);
+
+    ret = connect_net(host, port, &sock);
+    if (ret != SYSINFO_RET_OK)
+    {
+        SET_MSG_RESULT(result, strdup("Cannot connect, see log for details"));
+        return SYSINFO_RET_FAIL;
+    }
+
+    ret = send_command(sock, cmd, &data);
+    if (ret != SYSINFO_RET_OK)
+    {
+        SET_MSG_RESULT(result, strdup("Cannot send command, see log for details"));
+        return SYSINFO_RET_FAIL;
+    }
+
+    //parse(data);
+
+    SET_STR_RESULT(result, zbx_strdup(NULL, data));
+    data = NULL;
     return SYSINFO_RET_OK;
 }
 
@@ -324,3 +407,16 @@ static int zbx_module_haproxy_pools_net(AGENT_REQUEST *request, AGENT_RESULT *re
     return SYSINFO_RET_OK;
 }
 
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_activity_unix(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
+
+/******************************************************************************
+******************************************************************************/
+static int zbx_module_haproxy_activity_net(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+    return SYSINFO_RET_OK;
+}
