@@ -11,7 +11,9 @@ LOG_LEVEL_TRACE   5 (trace)
 
 static int item_timeout = 0;
 
-/* autodiscovery */
+/* 
+    autodiscovery 
+*/
 static int zbx_module_haproxy_frontend_autodiscovery(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int zbx_module_haproxy_backend_autodiscovery(AGENT_REQUEST *request, AGENT_RESULT *result);
 
@@ -275,7 +277,7 @@ static int zbx_module_haproxy_backend_autodiscovery(AGENT_REQUEST *request, AGEN
 static int zbx_module_haproxy_stat_csv(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
     const char *__function_name = "zbx_module_haproxy_stat_csv";
-        char *sockPath = NULL;
+    char *sockPath = NULL;
     char *host = NULL; 
     char *param2 = NULL;
     int port;
@@ -470,7 +472,7 @@ static int zbx_module_haproxy_info_text(AGENT_REQUEST *request, AGENT_RESULT *re
 static int zbx_module_haproxy_info_json(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
     const char *__function_name = "zbx_module_haproxy_info_json";
-        char *sockPath = NULL;
+    char *sockPath = NULL;
     char *host = NULL; 
     char *param2 = NULL;
     int port;
@@ -535,13 +537,13 @@ static int zbx_module_haproxy_info_json(AGENT_REQUEST *request, AGENT_RESULT *re
 static int zbx_module_haproxy_pools_text(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
     const char *__function_name = "zbx_module_haproxy_pools_text";
-        char *sockPath = NULL;
+    char *sockPath = NULL;
     char *host = NULL; 
     char *param2 = NULL;
     int port;
     int ret;
     int sock;
-    char *cmd = "show stat";
+    char *cmd = "show pools";
     char *data = NULL;
 
     if (request->nparam == 0 || request->nparam > 2)
